@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import "react-native-gesture-handler";
 import { useRef, useState } from "react";
-import { StyleSheet, View, Text, Button, SafeAreaView, Modal, Pressable, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, Button, SafeAreaView, Modal, Pressable, TouchableOpacity, Dimensions } from "react-native";
 import DuoDragDrop, { Word, Placeholder, Lines } from "@jamsch/react-native-duo-drag-drop";
 import type { DuoDragDropRef, DuoAnimatedStyleWorklet } from "@jamsch/react-native-duo-drag-drop";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
@@ -71,6 +71,30 @@ const QUESTIONS: Question[] = [
     correctAnswer: ["Uniform", "Resource", "Locator"],
   },
 ];
+
+const ProgressBar = ({ current, total }: { current: number; total: number }) => {
+  const progress = (current / total) * 100;
+  const screenWidth = Dimensions.get('window').width;
+  
+  return (
+    <View style={styles.progressContainer}>
+      <View style={styles.progressBackground}>
+        <View 
+          style={[
+            styles.progressFill, 
+            { 
+              width: `${progress}%`,
+              backgroundColor: progress === 100 ? '#4CAF50' : '#007AFF',
+            }
+          ]} 
+        />
+      </View>
+      <Text style={styles.progressText}>
+        Question {current + 1} of {total}
+      </Text>
+    </View>
+  );
+};
 
 export default function App() {
   const duoDragDropRef = useRef<DuoDragDropRef>(null);
@@ -170,6 +194,10 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         {!isComplete ? (
           <ScrollView>
+            <ProgressBar 
+              current={currentQuestionIndex} 
+              total={QUESTIONS.length} 
+            />
             <View style={{ alignItems: 'center', marginVertical: 20 }}>
               <View style={styles.questionCard}>
                 <Text style={styles.questionText}>
@@ -431,5 +459,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  progressContainer: {
+    padding: 20,
+    paddingBottom: 0,
+  },
+  progressBackground: {
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+    width: '0%',
+  },
+  progressText: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

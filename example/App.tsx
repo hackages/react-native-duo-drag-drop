@@ -26,20 +26,33 @@ const customAnimatedStyle: DuoAnimatedStyleWorklet = (style, isGestureActive) =>
 };
 
 export default function App() {
-  const [rtl, setRtl] = useState(false);
-  const [gradeWords, setGradeWords] = useState<boolean[]>([]);
-  const [gesturesDisabled, setGesturesDisabled] = useState(false);
-  const [answeredWords, setAnsweredWords] = useState<string[] | null>(null);
-  const [shouldUseCustomWorket, setShouldUseCustomWorket] = useState(false);
   const duoDragDropRef = useRef<DuoDragDropRef>(null);
-  const [log, setLog] = useState<string[]>([]);
-
   const words = ["Juan", "She", "apples", "today", "with", "eats", "her", "another"];
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <ScrollView>
+          <View style={{ alignItems: 'center', marginVertical: 20 }}>
+            <View style={{ 
+              backgroundColor: 'white', 
+              borderColor: 'lightblue',
+              borderWidth: 1,
+              padding: 15, 
+              borderRadius: 12,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              width: '90%',
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black' }}>
+                What does IT stand for?
+              </Text>
+            </View>
+          </View>
           <View style={styles.dragDropContainer}>
             <DuoDragDrop
               ref={duoDragDropRef}
@@ -47,29 +60,23 @@ export default function App() {
               wordHeight={40}
               lineHeight={49}
               wordGap={4}
-              gesturesDisabled={gesturesDisabled}
-              rtl={rtl}
+              gesturesDisabled={false}
+              rtl={false}
               wordBankOffsetY={10}
               wordBankAlignment="center"
-              extraData={gradeWords}
-              animatedStyleWorklet={shouldUseCustomWorket ? customAnimatedStyle : undefined}
+              animatedStyleWorklet={customAnimatedStyle}
               onDrop={(ev) => {
                 const { destination, index, position } = ev;
-                setLog((l) => [
-                  ...l,
-                  `[onDrop] Dropped word '${words[index]}' on '${destination}' at position ${position}`,
-                ]);
+                console.log(destination, index, position);
               }}
               renderWord={(_word, index) => (
                 <Word
-                  containerStyle={
-                    typeof gradeWords?.[index] === "boolean" && {
-                      backgroundColor: gradeWords?.[index] ? "green" : "red",
-                      borderColor: gradeWords?.[index] ? "green" : "red",
-                    }
-                  }
+                  containerStyle={{
+                    backgroundColor: "white",
+                    borderColor: "lightblue",
+                  }}
                   textStyle={{
-                    color: typeof gradeWords?.[index] === "boolean" ? "white" : "black",
+                    color: "black",
                   }}
                 />
               )}
@@ -82,50 +89,8 @@ export default function App() {
                 />
               )}
             />
-            <Button
-              title="Get answered words"
-              onPress={() => setAnsweredWords(duoDragDropRef.current?.getAnsweredWords() || [])}
-            />
-            {answeredWords && (
-              <View style={{ marginTop: 10 }}>
-                <Text>{JSON.stringify(answeredWords)}</Text>
-              </View>
-            )}
-            <View style={{ marginTop: 10 }}>
-              <Button
-                title="Grade words"
-                onPress={() => {
-                  if (gradeWords.length > 0) {
-                    setGradeWords([]);
-                  } else {
-                    setGradeWords([true, false, true, false, false, true, false, false]);
-                  }
-                }}
-              />
-            </View>
-            <View style={{ marginTop: 10 }}>
-              <Button title={`Gestures disabled: ${gesturesDisabled}`} onPress={() => setGesturesDisabled((s) => !s)} />
-            </View>
-            <View style={{ marginTop: 10 }}>
-              <Button
-                title={`Use custom animations: ${shouldUseCustomWorket}`}
-                onPress={() => setShouldUseCustomWorket((s) => !s)}
-              />
-            </View>
-            <View style={{ marginTop: 10 }}>
-              <Button title={`Right-To-Left: ${rtl}`} onPress={() => setRtl((s) => !s)} />
-            </View>
           </View>
         </ScrollView>
-        <View style={styles.logContainer}>
-          <Text style={styles.debugLogText}>EVENT LOG</Text>
-          <ScrollView>
-            {log.map((l, i) => (
-              <Text key={i}>{l}</Text>
-            ))}
-            {log.length === 0 && <Text>No events</Text>}
-          </ScrollView>
-        </View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

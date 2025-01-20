@@ -39,42 +39,180 @@ type Answer = {
   isCorrect: boolean;
 };
 
-const QUESTIONS: Question[] = [
+type Quiz = {
+  id: number;
+  title: string;
+  questions: Question[];
+};
+
+type Chapter = {
+  id: number;
+  title: string;
+  description: string;
+  quizzes: Quiz[];
+  isLocked?: boolean;
+};
+
+const COURSE_CHAPTERS: Chapter[] = [
   {
     id: 1,
-    question: "What does IT stand for?",
-    words: ["Technique", "Intelligence", "Technology", "Info", "Information"],
-    correctAnswer: ["Information", "Technology"],
+    title: "Basic Computing Terms",
+    description: "Learn fundamental computing terminology and common acronyms",
+    quizzes: [
+      {
+        id: 1,
+        title: "Computer Basics",
+        questions: [
+          {
+            id: 1,
+            question: "What does PC stand for?",
+            words: ["Personal", "Computer", "Processing", "Central", "Computing"],
+            correctAnswer: ["Personal", "Computer"],
+          },
+          {
+            id: 2,
+            question: "What does CPU stand for?",
+            words: ["Central", "Computing", "Processing", "Unit", "Unified"],
+            correctAnswer: ["Central", "Processing", "Unit"],
+          },
+        ],
+      },
+      {
+        id: 2,
+        title: "Storage Terms",
+        questions: [
+          {
+            id: 1,
+            question: "What does HDD stand for?",
+            words: ["Hard", "Disk", "Drive", "Data", "Digital"],
+            correctAnswer: ["Hard", "Disk", "Drive"],
+          },
+          {
+            id: 2,
+            question: "What does SSD stand for?",
+            words: ["Solid", "State", "Drive", "Storage", "System"],
+            correctAnswer: ["Solid", "State", "Drive"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 2,
-    question: "What does AI stand for?",
-    words: ["Artificial", "Advanced", "Intelligence", "Interface", "Internal"],
-    correctAnswer: ["Artificial", "Intelligence"],
+    title: "Internet & Web Technologies",
+    description: "Master common web and internet-related terminology",
+    quizzes: [
+      {
+        id: 1,
+        title: "Web Basics",
+        questions: [
+          {
+            id: 1,
+            question: "What does HTTP stand for?",
+            words: ["Hyper", "Text", "Transfer", "Protocol", "Process"],
+            correctAnswer: ["Hyper", "Text", "Transfer", "Protocol"],
+          },
+          {
+            id: 2,
+            question: "What does HTML stand for?",
+            words: ["Hyper", "Text", "Markup", "Language", "Link"],
+            correctAnswer: ["Hyper", "Text", "Markup", "Language"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 3,
-    question: "What does UI stand for?",
-    words: ["User", "Utility", "Interface", "Internal", "Integration"],
-    correctAnswer: ["User", "Interface"],
+    title: "Software Development",
+    description: "Learn common programming and development terminology",
+    quizzes: [
+      {
+        id: 1,
+        title: "Development Basics",
+        questions: [
+          {
+            id: 1,
+            question: "What does IDE stand for?",
+            words: ["Integrated", "Development", "Environment", "Interface", "Engine"],
+            correctAnswer: ["Integrated", "Development", "Environment"],
+          },
+          {
+            id: 2,
+            question: "What does API stand for?",
+            words: ["Application", "Programming", "Interface", "Program", "Integration"],
+            correctAnswer: ["Application", "Programming", "Interface"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 4,
-    question: "What does API stand for?",
-    words: ["Application", "Programming", "Interface", "Program", "Active"],
-    correctAnswer: ["Application", "Programming", "Interface"],
+    title: "Networking Fundamentals",
+    description: "Understand basic networking terminology and concepts",
+    quizzes: [
+      {
+        id: 1,
+        title: "Network Basics",
+        questions: [
+          {
+            id: 1,
+            question: "What does LAN stand for?",
+            words: ["Local", "Area", "Network", "Link", "Access"],
+            correctAnswer: ["Local", "Area", "Network"],
+          },
+          {
+            id: 2,
+            question: "What does DNS stand for?",
+            words: ["Domain", "Name", "System", "Server", "Service"],
+            correctAnswer: ["Domain", "Name", "System"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 5,
-    question: "What does URL stand for?",
-    words: ["Uniform", "Resource", "Locator", "Universal", "Link"],
-    correctAnswer: ["Uniform", "Resource", "Locator"],
+    title: "Modern Tech Trends",
+    description: "Explore contemporary technology terms and concepts",
+    quizzes: [
+      {
+        id: 1,
+        title: "Modern Technologies",
+        questions: [
+          {
+            id: 1,
+            question: "What does AI stand for?",
+            words: ["Artificial", "Intelligence", "Interface", "Automated", "Integration"],
+            correctAnswer: ["Artificial", "Intelligence"],
+          },
+          {
+            id: 2,
+            question: "What does IoT stand for?",
+            words: ["Internet", "of", "Things", "Technology", "Information"],
+            correctAnswer: ["Internet", "of", "Things"],
+          },
+        ],
+      },
+    ],
   },
 ];
 
+const getNextQuiz = (currentQuizId: number, currentChapterId: number): Quiz | null => {
+  const currentChapter = COURSE_CHAPTERS.find(chapter => chapter.id === currentChapterId);
+  const nextQuizInChapter = currentChapter?.quizzes.find(quiz => quiz.id > currentQuizId);
+  
+  if (nextQuizInChapter) {
+    return nextQuizInChapter;
+  }
+  
+  const nextChapter = COURSE_CHAPTERS.find(chapter => chapter.id === currentChapterId + 1);
+  return nextChapter?.quizzes[0] || null;
+};
+
 const ProgressBar = ({ current, total }: { current: number; total: number }) => {
   const progress = (current / total) * 100;
-  const screenWidth = Dimensions.get('window').width;
   
   return (
     <View style={styles.progressContainer}>
@@ -96,6 +234,36 @@ const ProgressBar = ({ current, total }: { current: number; total: number }) => 
   );
 };
 
+const CourseTimeline = ({ onSelectQuiz }: { onSelectQuiz: (quiz: Quiz) => void }) => {
+  return (
+    <ScrollView style={styles.timelineContainer}>
+      {COURSE_CHAPTERS.map((chapter, index) => (
+        <View key={chapter.id} style={styles.chapterContainer}>
+          <View style={styles.timelineConnector}>
+            <View style={styles.timelineDot} />
+            {index !== COURSE_CHAPTERS.length - 1 && <View style={styles.timelineLine} />}
+          </View>
+          <View style={styles.chapterContent}>
+            <Text style={styles.chapterTitle}>{chapter.title}</Text>
+            <Text style={styles.chapterDescription}>{chapter.description}</Text>
+            <View style={styles.quizList}>
+              {chapter.quizzes.map((quiz) => (
+                <TouchableOpacity
+                  key={quiz.id}
+                  style={styles.quizButton}
+                  onPress={() => onSelectQuiz(quiz)}
+                >
+                  <Text style={styles.quizButtonText}>{quiz.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      ))}
+    </ScrollView>
+  );
+};
+
 export default function App() {
   const duoDragDropRef = useRef<DuoDragDropRef>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -103,7 +271,8 @@ export default function App() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const currentQuestion = QUESTIONS[currentQuestionIndex];
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const currentQuestion = selectedQuiz?.questions[currentQuestionIndex];
 
   const validateAnswer = () => {
     const currentAnswer = duoDragDropRef.current?.getAnsweredWords() || [];
@@ -123,7 +292,7 @@ export default function App() {
 
   const handleNextQuestion = () => {
     setShowModal(false);
-    if (currentQuestionIndex < QUESTIONS.length - 1) {
+    if (currentQuestionIndex < selectedQuiz?.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setIsComplete(true);
@@ -132,13 +301,16 @@ export default function App() {
 
   const ResultsDashboard = () => {
     const correctAnswers = answers.filter(a => a.isCorrect).length;
+    const nextQuiz = selectedQuiz && getNextQuiz(selectedQuiz.id, COURSE_CHAPTERS.find(
+      chapter => chapter.quizzes.some(quiz => quiz.id === selectedQuiz.id)
+    )?.id || 0);
     
     return (
       <ScrollView style={styles.dashboardContainer}>
         <View style={styles.scoreCard}>
           <Text style={styles.scoreTitle}>Quiz Complete! 🎉</Text>
           <Text style={styles.scoreText}>
-            Score: {correctAnswers}/{QUESTIONS.length}
+            Score: {correctAnswers}/{selectedQuiz?.questions.length}
           </Text>
         </View>
         
@@ -175,16 +347,53 @@ export default function App() {
           </View>
         ))}
         
-        <TouchableOpacity 
-          style={styles.restartButton}
-          onPress={() => {
-            setCurrentQuestionIndex(0);
-            setAnswers([]);
-            setIsComplete(false);
-          }}
-        >
-          <Text style={styles.restartButtonText}>Restart Quiz</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity 
+            style={styles.restartButton}
+            onPress={() => {
+              setCurrentQuestionIndex(0);
+              setAnswers([]);
+              setIsComplete(false);
+            }}
+          >
+            <Text style={styles.restartButtonText}>Restart Quiz</Text>
+          </TouchableOpacity>
+
+          {nextQuiz && (
+            <TouchableOpacity 
+              style={styles.nextChapterButton}
+              onPress={() => {
+                setSelectedQuiz(nextQuiz);
+                setCurrentQuestionIndex(0);
+                setAnswers([]);
+                setIsComplete(false);
+              }}
+            >
+              <Text style={styles.nextChapterButtonText}>
+                Next Quiz: {nextQuiz.title}
+              </Text>
+              <Text style={styles.nextChapterSubtext}>
+                {COURSE_CHAPTERS.find(
+                  chapter => chapter.quizzes.some(quiz => quiz.id === nextQuiz.id)
+                )?.title}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {!nextQuiz && (
+            <TouchableOpacity 
+              style={styles.finishButton}
+              onPress={() => {
+                setSelectedQuiz(null);
+                setCurrentQuestionIndex(0);
+                setAnswers([]);
+                setIsComplete(false);
+              }}
+            >
+              <Text style={styles.finishButtonText}>Return to Chapters</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
     );
   };
@@ -192,11 +401,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        {!isComplete ? (
+        {!selectedQuiz ? (
+          <CourseTimeline onSelectQuiz={setSelectedQuiz} />
+        ) : !isComplete ? (
           <ScrollView>
             <ProgressBar 
               current={currentQuestionIndex} 
-              total={QUESTIONS.length} 
+              total={selectedQuiz?.questions.length} 
             />
             <View style={{ alignItems: 'center', marginVertical: 20 }}>
               <View style={styles.questionCard}>
@@ -271,7 +482,7 @@ export default function App() {
                   onPress={handleNextQuestion}
                 >
                   <Text style={styles.nextButtonText}>
-                    {currentQuestionIndex === QUESTIONS.length - 1 ? 'Finish' : 'Next Question'}
+                    {currentQuestionIndex === selectedQuiz?.questions.length - 1 ? 'Finish' : 'Next Question'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -480,5 +691,91 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
+  },
+  timelineContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  chapterContainer: {
+    flexDirection: 'row',
+    marginBottom: 30,
+  },
+  timelineConnector: {
+    width: 20,
+    alignItems: 'center',
+  },
+  timelineDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#007AFF',
+    marginRight: 10,
+  },
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    backgroundColor: '#007AFF',
+    marginVertical: 5,
+  },
+  chapterContent: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  chapterTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
+  },
+  chapterDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
+  },
+  quizList: {
+    gap: 10,
+  },
+  quizButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  quizButtonText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  buttonsContainer: {
+    gap: 10,
+    marginVertical: 20,
+  },
+  nextChapterButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  nextChapterButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  nextChapterSubtext: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  finishButton: {
+    backgroundColor: '#666',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  finishButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
